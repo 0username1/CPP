@@ -1,62 +1,72 @@
-#include<stdio.h>
+#include<iostream>
+using namespace std;
+void Avg_wt(int processes[],int n,int bt[],int wt[],int quantum)
+{
+	// Make a copy of burst times bt[] to store remaining
+	// burst times.
+	int rem_bt[n];
+	for (int i=0;i<n;i++) rem_bt[i] = bt[i];
+	int t = 0; // Current time
+	// Keep traversing processes in round robin manner until all of them are not done.
+	while (1)
+	{
+		bool done = true;
+		// Traverse all processes one by one repeatedly
+		for (int i=0;i<n;i++)
+		{
+			// If burst time of a process is greater than 0 then only need to process further
+			if (rem_bt[i] > 0)
+			{
+				done = false; // There is a pending process
+				if (rem_bt[i] > quantum)
+				{
+					// Increase the value of t i.e. shows how much time a process has been processed
+					t += quantum;
+					// Decrease the burst_time of current process by quantum
+					rem_bt[i] -= quantum;
+				}
+				// If burst time is smaller than or equal to quantum. Last cycle for this process
+				else
+				{
+					// Increase the value of t i.e. shows how much time a process has been processed
+					t = t + rem_bt[i];
+					// Waiting time is current time minus time used by this process
+					wt[i] = t - bt[i];
+					// As the process gets fully executed make its remaining burst time = 0
+					rem_bt[i] = 0;
+				}
+			}
+		}
+		// If all processes are done
+		if (done == true)
+		break;
+	}
+    int total_wt = 0;
+   for(int i=0;i<n;i++) total_wt = total_wt + wt[i];
+   cout<<"Average waiting time: "<< (float)total_wt / (float)n;
+}
+
+void Avg_tat(int processes[],int n,int bt[],int wt[],int tat[])
+{
+    int total_tat = 0;
+	for (int i = 0; i < n ; i++) tat[i] = bt[i] + wt[i];
+   for(int i=0;i<n;i++) total_tat = total_tat + tat[i];
+   cout<<"\nAverage turn around time: "<< (float)total_tat / (float)n;
+}
+
 int main()
 {
-int i, limit, total = 0, x, counter = 0, time_quantum;
-int wait_time = 0, turnaround_time = 0, arrival_time[10], burst_time[10], temp[10];
-float average_wait_time, average_turnaround_time;
-printf("nEnter Total Number of Processes:t");
-scanf("%d", &limit);
-x = limit;
-for(i = 0; i < limit; i++)
-{
-printf("nEnter Details of Process[%d]n", i + 1);
-printf("Arrival Time:t");
-scanf("%d", &arrival_time[i]);
-printf("Burst Time:t");
-scanf("%d", &burst_time[i]);
-temp[i] = burst_time[i];
+    int n,processes[50],bt[50],wt[50],tat[50],total_wt,total_tat,quantum;
+    cout<<"Enter no.of processes: ";
+    cin>>n;
+    cout<<"Enter processes: ";
+    for(int i=0;i<n;i++) cin>> processes[i];
+    cout<<"Enter their respective burst times: ";
+    for(int i=0;i<n;i++) cin>> bt[i];
+    cout<<"Enter time quantum: ";
+    cin>> quantum;
+	Avg_wt(processes,n,bt,wt,quantum);
+    Avg_tat(processes,n,bt,wt,tat);
+	return 0;
 }
-printf("nEnter Time Quantum:t");
-scanf("%d", &time_quantum);
-printf("nProcess IDttBurst Timet Turnaround Timet Waiting Timen");
-for(total = 0, i = 0; x != 0;)
-{
-if(temp[i] <= time_quantum && temp[i] > 0)
-{
-total = total + temp[i];
-temp[i] = 0;
-counter = 1;
-}
-else if(temp[i] > 0)
-{
-temp[i] = temp[i] - time_quantum;
-total = total + time_quantum;
-}
-if(temp[i] == 0 && counter == 1)
-{
-x--;
-printf("nProcess[%d]tt%dtt %dttt %d", i + 1, burst_time[i], total - arrival_time[i], total -
-arrival_time[i] - burst_time[i]);
-wait_time = wait_time + total - arrival_time[i] - burst_time[i];
-turnaround_time = turnaround_time + total - arrival_time[i];
-counter = 0;
-}
-if(i == limit - 1)
-{
-i = 0;
-}
-else if(arrival_time[i + 1] <= total)
-{
-i++;
-}
-else
-{
-i = 0;
-}
-}
-average_wait_time = wait_time * 1.0 / limit;
-average_turnaround_time = turnaround_time * 1.0 / limit;
-printf("nnAverage Waiting Time:t%f", average_wait_time);
-printf("nAvg Turnaround Time:t%fn", average_turnaround_time);
-return 0;
-}
+
